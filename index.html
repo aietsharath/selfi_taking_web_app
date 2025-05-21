@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Take Selfie</title>
+  <style>
+    video, canvas {
+      display: block;
+      margin: 10px auto;
+      max-width: 100%;
+    }
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="startCamera">Take Selfie</button>
+  <video id="video" autoplay playsinline width="320" height="240" style="display:none;"></video>
+  <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+  <img id="selfie" style="display:none;" />
+
+  <script>
+    const startCameraBtn = document.getElementById('startCamera');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const selfie = document.getElementById('selfie');
+
+    startCameraBtn.addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        video.srcObject = stream;
+        video.style.display = 'block';
+
+        setTimeout(() => {
+          // Draw video frame to canvas
+          canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = canvas.toDataURL('image/png');
+
+          // Stop the camera
+          stream.getTracks().forEach(track => track.stop());
+
+          // Show the captured selfie
+          selfie.src = imageData;
+          selfie.style.display = 'block';
+          video.style.display = 'none';
+        }, 3000); // Take selfie after 3 seconds
+      } catch (err) {
+        alert('Could not access camera: ' + err);
+      }
+    });
+  </script>
+
+</body>
+</html>
