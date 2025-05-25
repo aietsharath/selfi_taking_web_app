@@ -5,10 +5,11 @@
     "@vladmandic/face-api": "^1.7.15",
     "body-parser": "^2.2.0",
     "canvas": "^3.1.0",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "mongodb": "^6.16.0"
   },
   "scripts": {
-  "start": "node index.js"
-}
+    "start": "node index.js"
+  }
 }
