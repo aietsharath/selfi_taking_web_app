@@ -292,6 +292,9 @@ app.post('/upload', async (req, res) => {
 });
 
 
+app.get("/testing",(req,res)=>{
+  res.send("hello backend working prop on rendear")
+})
 app.listen(3000, () => {
   console.log('Server running on http://localhost:3000');
 }); 
