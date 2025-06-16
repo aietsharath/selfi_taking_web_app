@@ -1,4 +1,5 @@
 const express = require('express');
+const ExcelJS = require('exceljs');
 const bodyParser=require('body-parser')
 const faceapi=require("@vladmandic/face-api")
 const canvas=require("canvas")
@@ -292,8 +293,60 @@ app.post('/upload', async (req, res) => {
 });
 
 
-app.get("/testing",(req,res)=>{
-  res.send("hello backend working prop on rendear")
+const getAttendanceDataByClassId = async (classId) => {
+
+try{  await client.connect();
+  const db=client.db("Kempu")
+  const collection=db.collection("classfirst")
+  const query = { standard: classId };
+
+    const data = await collection.find(query).toArray();
+
+    // Format the data if needed
+    return data.map(doc => ({
+      image: doc.image,
+      timestamp: doc.timestamp,
+      descriptor: doc.descriptor,
+      standard: doc.standard,
+      attendance: (doc.attendance || []).map(a => ({
+        time: a.time,
+        date: a.date
+      }))
+    }));
+  } catch (error) {
+    console.error('Error fetching data from MongoDB:', error);
+    return [];
+  } finally {
+    await client.close();
+  } 
+}
+
+
+app.get("/download/:classId",async (req,res)=>{
+  const classId=req.params.classId;
+  const attendanceData=await getAttendanceDataByClassId(classId)
+  const workbook=new ExcelJS.Workbook()
+  const worksheet=workbook.addWorksheet("Attendance")
+   worksheet.columns = [
+      { header: 'Student Image', key: 'image', width: 30 },
+      { header: 'Timestamp', key: 'timestamp', width: 25 },
+      { header: 'Standard', key: 'standard', width: 10 },
+      { header: 'Descriptor', key: 'descriptor', width: 50 },
+      { header: 'Attendance Time', key: 'time', width: 15 },
+      { header: 'Attendance Date', key: 'date', width: 15 },
+    ];
+  worksheet.addRows(attendanceData)
+    res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename=attendance-class-${classId}.xlsx`
+  );
+
+  await workbook.xlsx.write(res);
+  res.end();
 })
 app.listen(3000, () => {
   console.log('Server running on http://localhost:3000');
