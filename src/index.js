@@ -353,6 +353,7 @@ app.get("/download/:classId",async (req,res)=>{
   await workbook.xlsx.write(res);
   res.end();
 })
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-}); 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
